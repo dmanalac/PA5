@@ -1,0 +1,4 @@
+#!/bin/sh
+(./lexer $* | ./parser $* | ./semant $* | ./cgen $*) && \
+ # Run again to append the annotations
+ (./lexer $* | ./parser $* | ./semant $* | ./anngen $*)

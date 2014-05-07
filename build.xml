@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="test" default="source">  
+  <description>
+    CS164 Programming Assignment #5
+  </description>
+
+  <!-- set global properties for this build -->
+  <property environment="env"/> 
+  <property name="classdir" value="${env.MASTERDIR}"/>
+  <property name="assn" value="5"/>
+  <property name="class" value="cs164"/>
+
+  <property name="src" value="CgenClassTable.java CgenNode.java CgenSupport.java TreeConstants.java cool-tree.java IntSymbol.java StringSymbol.java BoolConst.java example.cl README"/>
+  <property name="csrc" value="ASTConstants.java ASTLexer.java ASTParser.java AbstractSymbol.java AbstractTable.java Flags.java IdSymbol.java IdTable.java IntTable.java ListNode.java Cgen.java StringTable.java SymbolTable.java SymtabExample.java TokenConstants.java TreeNode.java ClassTable.java Utilities.java"/>
+
+  <property name="libs" value="reference-lexer-phase reference-parser-phase reference-semant-phase reference-anngen-phase"/>
+  <property name="cgen" value=""/>
+  <property name="cfil" value="*.java"/>
+
+  <property name="tsrc" value="mycoolc"/>
+  <property name="lsrc" value="build.xml tests/1.cl tests/2.cl tests/3.cl tests/4.cl tests/5.cl tests/6.cl"/>
+  <property name="output" value="example.output"/>
+
+
+  <property name="cupclasspath" value="${classdir}/lib"/>
+  <path id="classpath">
+    <dirset dir="${classdir}" includes="lib"/>
+    <dirset dir="."/>
+    <fileset dir="/usr/java/lib" file="rt.jar"/>
+  </path>
+  <property name="classpath.unix" value="${classdir}/lib:.:/usr/java/lib/rt.java"/>
+
+
+  <!-- target: test -->
+  <target name="test" depends="cgen">
+    <exec executable="./mycoolc" output="example.output">
+      <arg line="example.cl"/>
+    </exec>
+  </target>
+
+  <!-- target: semant -->
+  <target name="cgen" depends="cls" unless="sourceCheck">
+    <delete file="./cgen"/>
+    <echo file="./cgen">#!/bin/sh
+java -classpath ${classpath.unix} Cgen $$*
+    </echo>
+    <chmod perm="u+rx" file="cgen"/>
+  </target>
+
+  <target name="symtab-example" depends="cls">
+    <delete file="symtab-example"/>
+    <echo file="./symtab-example">#!/bin/sh
+java -classpath ${classpath.unix} SymtabExample $$*
+    </echo>   
+    <chmod perm="u+rx" file="symtab-example"/>
+  </target>
+
+  <target name="cls" depends="sourceCheck" unless="isSourceUpToDate">
+    <javac srcdir="." destdir="." includes="${cfil}" debug="true" nowarn="true">
+      <classpath refid="classpath"/>
+    </javac>
+    <touch file="cool-tree.class"/>
+  </target>
+
+  <target name="sourceCheck">
+    <uptodate 
+      property="isSourceUpToDate"
+      targetfile="./cgen">
+      <srcfiles dir="." includes="${cfil}"/>
+    </uptodate>
+  </target>
+
+
+  <!-- targe: source-->
+  <target name="source">
+    <mkdir dir="./tests"/>
+    <exec executable="${classdir}/etc/link-shared">
+      <arg line="${assn} ${lsrc}"/>
+    </exec>
+    <exec executable="${classdir}/etc/copy">
+      <arg line="${assn} ${src}"/>
+    </exec>
+    <apply executable="ln">
+      <arg value="-s"/>
+      <arg value="-f"/>
+      <fileset dir="${classdir}/bin" includes="${libs}"/>
+      <fileset dir="${classdir}/src/cool/PA${assn}J" includes="${csrc}"/>
+      <fileset dir="${classdir}/bin" includes="${tsrc}"/>
+    </apply>
+    <move file="reference-lexer-phase"  tofile="lexer"/>
+    <move file="reference-parser-phase" tofile="parser"/>
+    <move file="reference-semant-phase"   tofile="semant"/>
+    <move file="reference-anngen-phase" tofile="anngen"/>
+  </target>
+
+  <!-- target: clean -->
+  <target name="clean">
+    <delete>
+      <fileset dir="." includes="*~ *.s *.class ${cgen} ${output}"/>
+      <fileset dir="." includes="core cgen symtab-example"/>
+    </delete>
+  </target>
+
+
+  <!-- target: submit-clean -->
+  <target name="submit-clean" depends="test">
+    <delete>
+      <fileset dir="." includes="*~ *.s *.class ${cgen}"/>
+      <fileset dir="." includes="core cgen symtab-example"/> 
+    </delete>
+  </target>
+</project>
