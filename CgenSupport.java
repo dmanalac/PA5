@@ -80,6 +80,7 @@ class CgenSupport {
     final static String ALIGN        = "\t.align\t2\n";
     final static String WORD         = "\t.word\t";
 
+    final static String TEXT         = "\t.text\t"; //for .text
     // register names,
     final static String ZERO= "$zero";		// Zero register 
     final static String ACC = "$a0";		// Accumulator 

@@ -443,6 +443,7 @@ class CgenClassTable extends SymbolTable {
 	//                   - the class methods
 	//                   - etc...
 	emitObjInit();
+	
 	emitClassMethods();
     }
 
@@ -626,6 +627,7 @@ class CgenClassTable extends SymbolTable {
     		CgenSupport.emitReturn(str);
     	}
     }
+   
     /** Gets the root of the inheritance tree */
     public CgenNode root() {
 	return (CgenNode)probe(TreeConstants.Object_);
