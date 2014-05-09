@@ -443,7 +443,6 @@ class CgenClassTable extends SymbolTable {
 	//                   - the class methods
 	//                   - etc...
 	emitObjInit();
-	
 	emitClassMethods();
     }
 
@@ -454,13 +453,33 @@ class CgenClassTable extends SymbolTable {
 		int loc = 0;
 		for(Enumeration f = nd.getFeatures().getElements(); f.hasMoreElements();) {
 			Feature feat = (Feature) f.nextElement();
-	    		if (feat instanceof attr) {	
-	    			addID(((attr)feat).name, Entry( ((attr)feat).name, true, (loc+3)*4));
+			if ((nd.name != (TreeConstants.Object_)) 
+			&&   (nd.name != (TreeConstants.Str)) 
+			&&   (nd.name != (TreeConstants.Int)) 
+			&&   (nd.name != (TreeConstants.Bool))
+			&&   (nd.name != (TreeConstants.IO))) {
+	    			if (feat instanceof attr) {	
+	    			addId(((attr)feat).name, new Entry( ((attr)feat).name, true, (loc+3)*4));
 	    			loc += 1;
-	    		}		
-	    		else if (feat instanceof method) {	
-	    			feat.code(this, str);
-	    		}	
+	    			}		
+	    			else if (feat instanceof method) {	
+				str.println(nd.name + "." + ((method)feat).name());
+    				CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -12, str);
+    				CgenSupport.emitStore(CgenSupport.FP, 3, CgenSupport.SP, str);
+    				CgenSupport.emitStore(CgenSupport.SELF, 2, CgenSupport.SP, str);
+    				CgenSupport.emitStore(CgenSupport.RA, 1, CgenSupport.SP, str);
+    				CgenSupport.emitAddiu(CgenSupport.FP, CgenSupport.SP, 16, str);
+    				CgenSupport.emitMove(CgenSupport.SELF, CgenSupport.ACC, str);
+    		
+		    		feat.code(this, str);
+
+    				CgenSupport.emitLoad(CgenSupport.FP, 3, CgenSupport.SP, str);
+    				CgenSupport.emitLoad(CgenSupport.SELF, 2, CgenSupport.SP, str);
+    				CgenSupport.emitLoad(CgenSupport.RA, 1, CgenSupport.SP, str);
+    				CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 12, str);
+    				CgenSupport.emitReturn(str);
+	    			}	
+			}
 		}
 		exitScope();
     	}   	
@@ -610,10 +629,12 @@ class CgenClassTable extends SymbolTable {
     		CgenSupport.emitStore(CgenSupport.RA, 1, CgenSupport.SP, str);
     		CgenSupport.emitAddiu(CgenSupport.FP, CgenSupport.SP, 16, str);
     		CgenSupport.emitMove(CgenSupport.SELF, CgenSupport.ACC, str);
-    		if(!nd.name.toString().equals("Object")) {
+    		
+		if(!nd.name.toString().equals("Object")) {
     			CgenSupport.emitJal(nd.getParentNd().name+CgenSupport.CLASSINIT_SUFFIX, str);
     		}
-		for(Enumeration f = nd.getFeatures().getElements(); e.hasMoreElements();) {
+
+		for(Enumeration f = nd.getFeatures().getElements(); f.hasMoreElements();) {
 	    	Feature feat = (Feature) f.nextElement();
 	    		if (feat instanceof attr) {
 				feat.code(this, str);
@@ -632,5 +653,5 @@ class CgenClassTable extends SymbolTable {
     public CgenNode root() {
 	return (CgenNode)probe(TreeConstants.Object_);
     }
-}			  
+}		
     

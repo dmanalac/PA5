@@ -492,7 +492,13 @@ class method extends Feature {
 	public void code(CgenClassTable cls, PrintStream s) {
 		expr.code(cls, s);
 	}
+		
+
+	public AbstractSymbol name() {
+		return name;
+	}
 }
+
 
 /**
  * Defines AST constructor 'attr'.
@@ -697,10 +703,12 @@ class assign extends Expression {
 	 * @param s
 	 *            the output stream
 	 * */
-	public void code(CgenClassTable cls, PrintStream s) {
-		CgenSupport.emitStore(CgenSupport.ACC, -100, CgenSupport.SELF, s);
+	public void code(CgenClassTable cls, PrintStream s) {		
+		expr.code(cls, s);
+		if (((Entry)cls.lookup(name)).Local == false) {
+			CgenSupport.emitStore(CgenSupport.ACC , ((Entry)cls.lookup(name)).Offset, CgenSupport.SELF ,s);
+		}
 	}
-
 }
 
 /**
@@ -1953,8 +1961,10 @@ class new_ extends Expression {
 	 *            the output stream
 	 * */
 	public void code(CgenClassTable cls, PrintStream s) {
+		CgenSupport.emitLoadAddress(CgenSupport.ACC , type_name+CgenSupport.PROTOBJ_SUFFIX , s);
+		CgenSupport.emitJal("Object.copy", s);
+		CgenSupport.emitJal(type_name+CgenSupport.CLASSINIT_SUFFIX, s);
 	}
-
 }
 
 /**
@@ -2093,6 +2103,9 @@ class object extends Expression {
 	 *            the output stream
 	 * */
 	public void code(CgenClassTable cls, PrintStream s) {
+		if (((Entry)cls.lookup(name)).Local == false) {
+			CgenSupport.emitLoad(CgenSupport.ACC, ((Entry)cls.lookup(name)).Offset, CgenSupport.SELF, s);
+		}
 	}
 
 }
