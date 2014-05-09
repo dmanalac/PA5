@@ -781,6 +781,14 @@ class static_dispatch extends Expression {
 	 *            the output stream
 	 * */
 	public void code(CgenClassTable cls, PrintStream s) {
+		CgenSupport.emitPush(CgenSupport.FP, s);
+		for(int i = 0; i < actual.getLength(); i++) {
+			Expression e = (Expression) actual.getNth(i);
+			e.code(cls, s);
+			CgenSupport.emitPush(CgenSupport.ACC,s);
+		}
+		String method = type_name + name.toString(); //TODO
+		CgenSupport.emitJal(method, s);
 	}
 
 }
@@ -848,6 +856,14 @@ class dispatch extends Expression {
 	 *            the output stream
 	 * */
 	public void code(CgenClassTable cls, PrintStream s) {
+		CgenSupport.emitPush(CgenSupport.FP, s);
+		for(int i = 0; i < actual.getLength(); i++) {
+			Expression e = (Expression) actual.getNth(i);
+			e.code(cls, s);
+			CgenSupport.emitPush(CgenSupport.ACC,s);
+		}
+		String method = "class type" + name.toString(); //TODO
+		CgenSupport.emitJal(method, s);
 	}
 
 }
@@ -1061,6 +1077,42 @@ class typcase extends Expression {
 	 *            the output stream
 	 * */
 	public void code(CgenClassTable cls, PrintStream s) {
+		//TODO
+		branch b;
+		expr.code(cls,s);
+		int epilogueLabel= labelNum++;
+		
+		/*label for end of case */
+		CgenSupport.emitLabelDef(epilogueLabel, s);
+		CgenSupport.emitEpilogue(s);
+		
+		// start ???
+		int branchLabel = labelNum++;
+		CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, branchLabel, s);
+		CgenSupport.emitLoadAddress(CgenSupport.ACC, "str_const1", s);
+		CgenSupport.emitLoadImm(CgenSupport.T1, 13, s);
+		CgenSupport.emitJal("case_abort2", s);
+		// end ???
+		
+		for(int i = 0; i < cases.getLength(); i++) {
+			b = (branch) cases.getNth(i);
+			CgenSupport.emitLabelDef(branchLabel, s);
+			if(i == 0) {
+				CgenSupport.emitLoad(CgenSupport.T2, 0, CgenSupport.ACC, s);
+			}
+			branchLabel = labelNum++;
+			CgenNode branchNode = (CgenNode) cls.lookup(b.type_decl);
+			int tag = (int) cls.tagDict.get(branchNode);
+			CgenSupport.emitBlt(CgenSupport.T2, tag+"" , branchLabel, s);
+			CgenSupport.emitBlt(tag+"", CgenSupport.T2, branchLabel, s);
+			//?
+			b.expr.code(cls,s);
+			CgenSupport.emitBranch(epilogueLabel, s);
+		}
+		
+		/*none of the types match */
+		CgenSupport.emitLabelDef(branchLabel, s);
+		CgenSupport.emitJal("_case_abort", s);
 	}
 
 }
