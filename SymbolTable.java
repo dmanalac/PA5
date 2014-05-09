@@ -143,5 +143,15 @@ class SymbolTable {
     }
 }
     
+class Entry {
+public AbstractSymbol Name;
+public boolean Local;
+public int Offset;
+public Entry(AbstractSymbol n, boolean l, int p) {
+Name = n;
+Local = l;
+Offset = p+3;
+} 
+}
 	
 	

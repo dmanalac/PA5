@@ -4,6 +4,8 @@
  *)
 
 class Main {
-  main():Int { 0 };
+  a:Int<-4;  
+  main():Int {0};
 };
+
 
