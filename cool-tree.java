@@ -2064,6 +2064,16 @@ class isvoid extends Expression {
 	 *            the output stream
 	 * */
 	public void code(CgenClassTable cls, PrintStream s) {
+		e1.code(cls, s);
+		CgenSupport.emitMove(CgenSupport.T1, CgenSupport.ACC, s);
+		CgenSupport.emitLoadAddress(CgenSupport.ACC, CgenSupport.BOOLCONST_PREFIX+1, s); //true
+		int num = labelNum++;
+		CgenSupport.emitBeqz(CgenSupport.ACC, num, s);
+		CgenSupport.emitLoadAddress(CgenSupport.ACC, CgenSupport.BOOLCONST_PREFIX+0, s); //false
+		
+		CgenSupport.emitLabelDef(num, s);
+		CgenSupport.emitEpilogue(s);
+		
 	}
 
 }
