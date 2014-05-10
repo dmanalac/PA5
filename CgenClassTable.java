@@ -467,21 +467,30 @@ class CgenClassTable extends SymbolTable {
 	    			loc += 1;
 	    			}		
 	    			else if (feat instanceof method) {	
-				str.print(nd.name + CgenSupport.METHOD_SEP + ((method)feat).name() + CgenSupport.LABEL);
-    				CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -12, str);
-    				CgenSupport.emitStore(CgenSupport.FP, 3, CgenSupport.SP, str);
-    				CgenSupport.emitStore(CgenSupport.SELF, 2, CgenSupport.SP, str);
-    				CgenSupport.emitStore(CgenSupport.RA, 1, CgenSupport.SP, str);
-    				CgenSupport.emitAddiu(CgenSupport.FP, CgenSupport.SP, 16, str);
-    				CgenSupport.emitMove(CgenSupport.SELF, CgenSupport.ACC, str);
-    		
-		    		feat.code(this, str);
-
-    				CgenSupport.emitLoad(CgenSupport.FP, 3, CgenSupport.SP, str);
-    				CgenSupport.emitLoad(CgenSupport.SELF, 2, CgenSupport.SP, str);
-    				CgenSupport.emitLoad(CgenSupport.RA, 1, CgenSupport.SP, str);
-    				CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 12+((method)feat).formals.getLength()*4, str);
-    				CgenSupport.emitReturn(str);
+	    				Formals fs = ((method) feat).formals;
+	    				for(int i = fs.getLength()-1; i>=0; i--) {
+	    					enterScope();
+	    					AbstractSymbol n = ((formalc)fs.getNth(i)).name;
+	    					addId(n, new Entry(n, true, 0));
+	    				}
+	    				str.print(nd.name + CgenSupport.METHOD_SEP + ((method)feat).name() + CgenSupport.LABEL);
+	    				CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -12, str);
+	    				CgenSupport.emitStore(CgenSupport.FP, 3, CgenSupport.SP, str);
+	    				CgenSupport.emitStore(CgenSupport.SELF, 2, CgenSupport.SP, str);
+	    				CgenSupport.emitStore(CgenSupport.RA, 1, CgenSupport.SP, str);
+	    				CgenSupport.emitAddiu(CgenSupport.FP, CgenSupport.SP, 16, str);
+	    				CgenSupport.emitMove(CgenSupport.SELF, CgenSupport.ACC, str);
+	    		
+			    		feat.code(this, str);
+	
+	    				CgenSupport.emitLoad(CgenSupport.FP, 3, CgenSupport.SP, str);
+	    				CgenSupport.emitLoad(CgenSupport.SELF, 2, CgenSupport.SP, str);
+	    				CgenSupport.emitLoad(CgenSupport.RA, 1, CgenSupport.SP, str);
+	    				CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 12+((method)feat).formals.getLength()*4, str);
+	    				CgenSupport.emitReturn(str);
+	    				for(int i = 0; i < fs.getLength(); i++) {
+	    					exitScope();
+	    				}
 	    			}	
 			}
 		}

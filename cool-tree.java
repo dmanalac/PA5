@@ -711,7 +711,7 @@ class assign extends Expression {
 		if (((Entry)cls.lookup(name)).Local == false) {
 			CgenSupport.emitStore(CgenSupport.ACC , ((Entry)cls.lookup(name)).Offset, CgenSupport.SELF ,s);
 		} else {
-			CgenSupport.emitStore(CgenSupport.ACC, cls.depth(name), CgenSupport.SELF, s);
+			CgenSupport.emitStore(CgenSupport.ACC, cls.depth(name), CgenSupport.FP, s);
 		}
 	}
 }
@@ -1318,12 +1318,11 @@ class plus extends Expression {
 	 * */
 	public void code(CgenClassTable cls, PrintStream s) {
 		e1.code(cls, s);
-		CgenSupport.emitPush(CgenSupport.ACC, s);
+		CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
 		e2.code(cls, s);
-		CgenSupport.emitTop(CgenSupport.T1, s);
-		CgenSupport
-				.emitAdd(CgenSupport.ACC, CgenSupport.T1, CgenSupport.ACC, s);
-		CgenSupport.emitPop(s);
+		CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.ACC, s);
+		CgenSupport.emitAdd(CgenSupport.T1, CgenSupport.T1, CgenSupport.T2, s);
+		CgenSupport.emitStore(CgenSupport.T1, 3, CgenSupport.ACC, s);
 	}
 
 }
@@ -1381,12 +1380,11 @@ class sub extends Expression {
 	 * */
 	public void code(CgenClassTable cls, PrintStream s) {
 		e1.code(cls, s);
-		CgenSupport.emitPush(CgenSupport.ACC, s);
+		CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
 		e2.code(cls, s);
-		CgenSupport.emitTop(CgenSupport.T1, s);
-		CgenSupport
-				.emitSub(CgenSupport.ACC, CgenSupport.T1, CgenSupport.ACC, s);
-		CgenSupport.emitPop(s);
+		CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.ACC, s);
+		CgenSupport.emitSub(CgenSupport.T1, CgenSupport.T1, CgenSupport.T2, s);
+		CgenSupport.emitStore(CgenSupport.T1, 3, CgenSupport.ACC, s);
 	}
 
 }
@@ -1444,12 +1442,11 @@ class mul extends Expression {
 	 * */
 	public void code(CgenClassTable cls, PrintStream s) {
 		e1.code(cls, s);
-		CgenSupport.emitPush(CgenSupport.ACC, s);
+		CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
 		e2.code(cls, s);
-		CgenSupport.emitTop(CgenSupport.T1, s);
-		CgenSupport
-				.emitMul(CgenSupport.ACC, CgenSupport.T1, CgenSupport.ACC, s);
-		CgenSupport.emitPop(s);
+		CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.ACC, s);
+		CgenSupport.emitMul(CgenSupport.T1, CgenSupport.T1, CgenSupport.T2, s);
+		CgenSupport.emitStore(CgenSupport.T1, 3, CgenSupport.ACC, s);
 	}
 
 }
@@ -1507,12 +1504,11 @@ class divide extends Expression {
 	 * */
 	public void code(CgenClassTable cls, PrintStream s) {
 		e1.code(cls, s);
-		CgenSupport.emitPush(CgenSupport.ACC, s);
+		CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
 		e2.code(cls, s);
-		CgenSupport.emitTop(CgenSupport.T1, s);
-		CgenSupport
-				.emitDiv(CgenSupport.ACC, CgenSupport.T1, CgenSupport.ACC, s);
-		CgenSupport.emitPop(s);
+		CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.ACC, s);
+		CgenSupport.emitDiv(CgenSupport.T1, CgenSupport.T1, CgenSupport.T2, s);
+		CgenSupport.emitStore(CgenSupport.T1, 3, CgenSupport.ACC, s);
 	}
 
 }
@@ -2192,7 +2188,7 @@ class object extends Expression {
 		if (((Entry)cls.lookup(name)).Local == false) {
 			CgenSupport.emitLoad(CgenSupport.ACC, ((Entry)cls.lookup(name)).Offset, CgenSupport.SELF, s);
 		} else {
-			CgenSupport.emitLoad(CgenSupport.ACC, cls.depth(name), CgenSupport.SP, s);
+			CgenSupport.emitLoad(CgenSupport.ACC, cls.depth(name), CgenSupport.FP, s);
 		}
 	}
 
