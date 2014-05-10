@@ -603,7 +603,7 @@ class CgenClassTable extends SymbolTable {
     	}
     }
     private void emitDispTbls() {
-    	for (Enumeration e = nds.elements(); e.hasMoreElements(); ) {
+    	/*for (Enumeration e = nds.elements(); e.hasMoreElements(); ) {
     		String methodName;
     	    CgenNode nd = (CgenNode)e.nextElement();
     	    dispTbls.put(nd.name, new ArrayList<methodName>());
@@ -615,22 +615,60 @@ class CgenClassTable extends SymbolTable {
     	    		methodName = nd.name + CgenSupport.METHOD_SEP + ((method) feat).name;
     	    		dispTbls.get(nd.name).add(new methodName(nd.name,((method) feat).name));
     	    	}
-    	    }*/
+    	    }
     	    while(!parents.empty()) {
     	    	CgenNode parent = parents.pop();
     	    	emitMethods(nd, parent);
     	    }
     	    emitMethods(nd, nd);
-        	ArrayList<methodName> dispTbl = dispTbls.get(nd.name);
-        	System.out.println(nd.name);
+        	//ArrayList<methodName> dispTbl = dispTbls.get(nd.name);
+        	//System.out.println(nd.name);
         	/*for(int i = 0; i < dispTbl.size(); i++) {
         		System.out.println(dispTbl.get(i).methName);
-        	}*/
+        	}
+    	}*/
+    	for (Enumeration e = nds.elements(); e.hasMoreElements(); ) {
+    	    CgenNode nd = (CgenNode)e.nextElement();
+    	    dispTbls.put(nd.name, new ArrayList<methodName>());
+	    	String methodName;
+	    	AbstractSymbol clsName, methName;
+	    	int size;
+    	    str.print(nd.name+CgenSupport.DISPTAB_SUFFIX+CgenSupport.LABEL);
+	    	if(!(nd.getParentNd().name == TreeConstants.No_class)) {
+		    	ArrayList<methodName> dispTbl = dispTbls.get(nd.getParentNd().name);
+		    	for(int i = 0; i < dispTbl.size(); i++) {
+		    		clsName = dispTbl.get(i).clsName;
+		    		methName = dispTbl.get(i).methName;
+		    		if(containsMethod(nd, methName)) {
+		    			clsName = nd.name;
+		    		}
+					str.print(CgenSupport.WORD);
+					methodName = clsName + CgenSupport.METHOD_SEP + methName;
+		    		str.println(methodName);
+		    		dispTbls.get(nd.name).add(new methodName(clsName, methName));
+		    	}
+	    	}
+	    	for(Enumeration ee = nd.getFeatures().getElements(); ee.hasMoreElements();) {
+	    		Feature feat = (Feature) ee.nextElement();
+	    		if (feat instanceof method) {
+	    			method m = (method) feat;
+	    			if(!inDispTbl(nd.getParentNd().name, m.name)) {
+						str.print(CgenSupport.WORD);
+						methodName = nd.name + CgenSupport.METHOD_SEP + m.name;
+			    		str.println(methodName);
+		        		dispTbls.get(nd.name).add(new methodName(nd.name, m.name));
+	    			}
+	    		}
+	    	}
+    	
     	}
     }
-    private void emitMethods(CgenNode currClass, CgenNode nd) {
-    	String methodName;
+  /*  private void emitMethods(CgenNode currClass, CgenNode nd) {
+
+
     	boolean lowestChild = currClass.equals(nd);
+
+   
     	for(Enumeration e = nd.getFeatures().getElements(); e.hasMoreElements();) {
 	    	Feature feat = (Feature) e.nextElement();
 	    	if (feat instanceof method) {	
@@ -654,7 +692,7 @@ class CgenClassTable extends SymbolTable {
     			}
 		    }
     	}
-    }
+    }*/
     private boolean containsMethod(CgenNode nd, AbstractSymbol methodName) {
     	for(Enumeration e = nd.getFeatures().getElements(); e.hasMoreElements();) {
     		Feature feat = (Feature) e.nextElement();
@@ -726,6 +764,18 @@ class CgenClassTable extends SymbolTable {
     		}
     	}
     	return -1;
+    }
+    public boolean inDispTbl(AbstractSymbol clsName, AbstractSymbol methName) {
+    	ArrayList<methodName> dispTbl = dispTbls.get(clsName);
+    	if(dispTbl == null) { 
+    		return false;
+    	}
+    	for(int i = 0; i < dispTbl.size(); i++) {
+    		if(methName.equals(dispTbl.get(i).methName)) {
+    			return true;
+    		}
+    	}
+    	return false;
     }
     private class methodName {
     	public AbstractSymbol clsName;
