@@ -550,7 +550,10 @@ class attr extends Feature {
 		init.dump_with_types(out, n + 2);
 	}
 	public void code(CgenClassTable cls, PrintStream s) {
-		init.code(cls, s);
+		if (!(init instanceof no_expr)) {
+			init.code(cls, s);
+			CgenSupport.emitStore(CgenSupport.ACC , ((Entry)cls.lookup(name)).Offset, CgenSupport.SELF ,s);
+		}
 	}
 
 }
@@ -707,6 +710,8 @@ class assign extends Expression {
 		expr.code(cls, s);
 		if (((Entry)cls.lookup(name)).Local == false) {
 			CgenSupport.emitStore(CgenSupport.ACC , ((Entry)cls.lookup(name)).Offset, CgenSupport.SELF ,s);
+		} else {
+			CgenSupport.emitStore(CgenSupport.ACC, cls.depth(name), CgenSupport.SELF, s);
 		}
 	}
 }
@@ -1185,8 +1190,14 @@ class let extends Expression {
 	 *            the output stream
 	 * */
 	public void code(CgenClassTable cls, PrintStream s) {
+		init.code(cls,s);
+		CgenSupport.emitPush(CgenSupport.ACC, s);
+		cls.enterScope();
+		cls.addId(identifier, new Entry(identifier, true, 0));
+		body.code(cls,s);
+		cls.exitScope();
+		CgenSupport.emitPop(s);
 	}
-
 }
 
 /**
@@ -2105,6 +2116,8 @@ class object extends Expression {
 	public void code(CgenClassTable cls, PrintStream s) {
 		if (((Entry)cls.lookup(name)).Local == false) {
 			CgenSupport.emitLoad(CgenSupport.ACC, ((Entry)cls.lookup(name)).Offset, CgenSupport.SELF, s);
+		} else {
+			CgenSupport.emitLoad(CgenSupport.ACC, cls.depth(name), CgenSupport.SP, s);
 		}
 	}
 

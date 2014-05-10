@@ -113,6 +113,20 @@ class SymbolTable {
 	return null;
     }
 
+    public int depth(AbstractSymbol sym) {
+	if (tbl.empty()) {
+	    Utilities.fatalError("lookup: no scope in symbol table.");
+	}
+	// I break the abstraction here a bit by knowing that stack is 
+	// really a vector...
+	for (int i = tbl.size() - 1; i >= 0; i--) {
+	    Object info = ((Hashtable)tbl.elementAt(i)).get(sym);
+	    if (info != null) return (tbl.size()-i-1);
+	}
+	return -1;
+    }
+
+
     /** 
      * Probes the symbol table.  Check the top scope (only) for the
      * symbol <code>sym</code>.  If found, return the information field.
