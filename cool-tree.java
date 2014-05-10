@@ -1270,11 +1270,16 @@ class let extends Expression {
 		CgenSupport.emitStore(CgenSupport.SELF, 2, CgenSupport.SP, s);
 		CgenSupport.emitStore(CgenSupport.RA, 1, CgenSupport.SP, s);
 		CgenSupport.emitAddiu(CgenSupport.FP, CgenSupport.SP, 16, s);
-		CgenSupport.emitMove(CgenSupport.SELF, CgenSupport.ACC, s);
+		//CgenSupport.emitMove(CgenSupport.SELF, CgenSupport.ACC, s);
 		
 		body.code(cls,s);
-		CgenSupport.emitEpilogue(s);
 		CgenSupport.emitPop(s);
+    	CgenSupport.emitLoad(CgenSupport.FP, 3, CgenSupport.SP, s);
+    	CgenSupport.emitLoad(CgenSupport.SELF, 2, CgenSupport.SP, s);
+    	CgenSupport.emitLoad(CgenSupport.RA, 1, CgenSupport.SP, s);
+    	CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 12, s);
+    	CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 0, s);
+    	//CgenSupport.emitReturn(s);
 		cls.exitScope();
 	}
 }
