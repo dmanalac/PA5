@@ -956,7 +956,7 @@ class cond extends Expression {
 		else_exp.code(cls, s);
 
 		CgenSupport.emitLabelDef(num2, s);
-		CgenSupport.emitEpilogue(s);
+		//CgenSupport.emitEpilogue(s);
 
 		// if true then 4 else 5
 		/*
@@ -1260,6 +1260,15 @@ class let extends Expression {
 		}
 		else {
 			CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.ZERO, s);
+			if ((type_decl == TreeConstants.Int)) {
+    			CgenSupport.emitLoadAddress(CgenSupport.ACC,CgenSupport.INTCONST_PREFIX + (AbstractTable.inttable.lookup("0")).index, s);
+    		} else if (type_decl == TreeConstants.Str) {
+    			CgenSupport.emitLoadAddress(CgenSupport.ACC, CgenSupport.STRCONST_PREFIX + (AbstractTable.stringtable.lookup("")).index, s);
+    		} else if (type_decl == TreeConstants.Bool) {
+    			CgenSupport.emitLoadAddress(CgenSupport.ACC, CgenSupport.BOOLCONST_PREFIX+"0", s);
+    		} else {
+    			CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.ZERO, s);
+    		}
 		}
 		CgenSupport.emitPush(CgenSupport.ACC, s);
 		cls.enterScope();
@@ -1902,11 +1911,12 @@ class comp extends Expression {
 		e1.code(cls, s);
 		CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
 		CgenSupport.emitLoadAddress(CgenSupport.ACC, CgenSupport.BOOLCONST_PREFIX + "1", s);
-		CgenSupport.emitBeqz(CgenSupport.T1, labelNum++, s);
+		int num = labelNum++;
+		CgenSupport.emitBeqz(CgenSupport.T1, num, s);
 		CgenSupport.emitLoadAddress(CgenSupport.ACC, CgenSupport.BOOLCONST_PREFIX + "0", s);
 
-		CgenSupport.emitLabelDef(labelNum-1, s);
-		CgenSupport.emitEpilogue(s);
+		CgenSupport.emitLabelDef(num, s);
+		//CgenSupport.emitEpilogue(s);
 	}
 
 }
