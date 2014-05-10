@@ -1033,7 +1033,7 @@ class loop extends Expression {
 		CgenSupport.emitBranch(num, s); //loop back
 		
 		CgenSupport.emitLabelDef(num2, s); //cond false
-		CgenSupport.emitEpilogue(s);
+		//CgenSupport.emitEpilogue(s);
 		
 		
 
@@ -1098,12 +1098,9 @@ class typcase extends Expression {
 		//TODO
 		branch b;
 		expr.code(cls,s);
-		int epilogueLabel= labelNum++;
+		int epilogueLabel = labelNum++;
 		
-		/*label for end of case */
-		CgenSupport.emitLabelDef(epilogueLabel, s);
-		CgenSupport.emitEpilogue(s);
-		
+
 		// start ???
 		int branchLabel = labelNum++;
 		CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, branchLabel, s);
@@ -1131,6 +1128,11 @@ class typcase extends Expression {
 		/*none of the types match */
 		CgenSupport.emitLabelDef(branchLabel, s);
 		CgenSupport.emitJal("_case_abort", s);
+		
+		/*label for end of case */
+		CgenSupport.emitLabelDef(epilogueLabel, s);
+		//CgenSupport.emitEpilogue(s);
+		
 	}
 
 }
@@ -2182,7 +2184,7 @@ class isvoid extends Expression {
 		CgenSupport.emitLoadAddress(CgenSupport.ACC, CgenSupport.BOOLCONST_PREFIX+0, s); //false
 		
 		CgenSupport.emitLabelDef(num, s);
-		CgenSupport.emitEpilogue(s);
+		//CgenSupport.emitEpilogue(s);
 		
 	}
 
