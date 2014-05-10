@@ -6,9 +6,11 @@
 //
 //////////////////////////////////////////////////////////
 
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.io.PrintStream;
 import java.util.Vector;
+
 
 /** Defines simple phylum Program */
 abstract class Program extends TreeNode {
@@ -786,16 +788,23 @@ class static_dispatch extends Expression {
 	 *            the output stream
 	 * */
 	public void code(CgenClassTable cls, PrintStream s) {
-		CgenSupport.emitPush(CgenSupport.FP, s);
+		//CgenSupport.emitPush(CgenSupport.FP, s);
 		for(int i = 0; i < actual.getLength(); i++) {
 			Expression e = (Expression) actual.getNth(i);
 			e.code(cls, s);
 			CgenSupport.emitPush(CgenSupport.ACC,s);
 		}		
-		CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
+		//CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
+		expr.code(cls,s);
 		CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
 		CgenSupport.emitLoad(CgenSupport.T1, cls.methodIndex(type_name, name), CgenSupport.T1, s);
 		CgenSupport.emitJalr(CgenSupport.T1, s);
+		
+		/*if (expr.get_type().equals(TreeConstants.SELF_TYPE))
+			CgenSupport.emitLoad(CgenSupport.T1, cls.methodIndex(cls.currClass, name), CgenSupport.T1, s);
+		else
+			CgenSupport.emitLoad(CgenSupport.T1, cls.methodIndex(expr.get_type(), name), CgenSupport.T1, s);
+		CgenSupport.emitJalr(CgenSupport.T1, s);*/
 	}
 	
 	
@@ -871,13 +880,17 @@ class dispatch extends Expression {
 			e.code(cls, s);
 			CgenSupport.emitPush(CgenSupport.ACC,s);
 		}
-		CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
+		//CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
+		expr.code(cls, s);
 		CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
 		//System.out.println("class name "+cls.currClass+"   expr type "+expr.get_type());
 		if (expr.get_type().equals(TreeConstants.SELF_TYPE))
 			CgenSupport.emitLoad(CgenSupport.T1, cls.methodIndex(cls.currClass, name), CgenSupport.T1, s);
-		else
+		else {
+			//System.out.println("index "+cls.methodIndex(expr.get_type(), name));
 			CgenSupport.emitLoad(CgenSupport.T1, cls.methodIndex(expr.get_type(), name), CgenSupport.T1, s);
+		}
+
 		CgenSupport.emitJalr(CgenSupport.T1, s);
 		
 		//java.util.ArrayList x = cls.dispTbls.get(cls.currClass);
@@ -2284,9 +2297,14 @@ class object extends Expression {
 	 *            the output stream
 	 * */
 	public void code(CgenClassTable cls, PrintStream s) {
-		if (((Entry)cls.lookup(name)).Local == false) {
+		//System.out.println("code name" + name);
+		//System.out.println("code" + ((Entry)cls.lookup(name)));
+		if(name == TreeConstants.self) {
+			CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
+		}
+		else if (((Entry)cls.lookup(name)).Local == false) {
 			CgenSupport.emitLoad(CgenSupport.ACC, ((Entry)cls.lookup(name)).Offset, CgenSupport.SELF, s);
-		} else {
+		} else if (((Entry)cls.lookup(name)).Local == true){
 			CgenSupport.emitLoad(CgenSupport.ACC, cls.depth(name), CgenSupport.FP, s);
 		}
 	}
