@@ -791,10 +791,14 @@ class static_dispatch extends Expression {
 			Expression e = (Expression) actual.getNth(i);
 			e.code(cls, s);
 			CgenSupport.emitPush(CgenSupport.ACC,s);
-		}
-		String method = type_name + name.toString(); //TODO
-		CgenSupport.emitJal(method, s);
+		}		
+		CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
+		CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
+		CgenSupport.emitLoad(CgenSupport.T1, cls.methodIndex(type_name, name), CgenSupport.T1, s);
+		CgenSupport.emitJalr(CgenSupport.T1, s);
 	}
+	
+	
 
 }
 
@@ -861,14 +865,23 @@ class dispatch extends Expression {
 	 *            the output stream
 	 * */
 	public void code(CgenClassTable cls, PrintStream s) {
-		CgenSupport.emitPush(CgenSupport.FP, s);
+		//CgenSupport.emitPush(CgenSupport.FP, s);
 		for(int i = 0; i < actual.getLength(); i++) {
 			Expression e = (Expression) actual.getNth(i);
 			e.code(cls, s);
 			CgenSupport.emitPush(CgenSupport.ACC,s);
 		}
-		String method = "class type" + name.toString(); //TODO
-		CgenSupport.emitJal(method, s);
+		CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
+		CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
+		CgenSupport.emitLoad(CgenSupport.T1, cls.methodIndex(cls.currClass, name), CgenSupport.T1, s);
+		CgenSupport.emitJalr(CgenSupport.T1, s);
+		
+		//java.util.ArrayList x = cls.dispTbls.get(cls.currClass);
+		//System.out.println(cls.dispTbls.get(cls.currClass));
+		//System.out.println("class "+cls.currClass.toString());
+		//for(int i = 0; i < x.size(); i++) {
+		//	System.out.print(x.get(i).toString());
+		//}
 	}
 
 }
@@ -1009,13 +1022,13 @@ class loop extends Expression {
 	 *            the output stream
 	 * */
 	public void code(CgenClassTable cls, PrintStream s) {
-		String zero = CgenSupport.INTCONST_PREFIX + (AbstractTable.inttable.lookup("0")).index;
+		//String zero = CgenSupport.INTCONST_PREFIX + (AbstractTable.inttable.lookup("0")).index;
 		int num = labelNum++;
 		CgenSupport.emitLabelDef(num, s);
 		pred.code(cls, s);
 		CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
 		int num2 = labelNum++;
-		CgenSupport.emitBeq(CgenSupport.T1, zero, num2, s); //cond
+		CgenSupport.emitBeq(CgenSupport.T1, CgenSupport.ZERO, num2, s); //cond
 		body.code(cls, s); //cond true 
 		CgenSupport.emitBranch(num, s); //loop back
 		

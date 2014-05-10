@@ -22,11 +22,13 @@ PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // This is a project skeleton file
 
 import java.io.PrintStream;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Vector;
 import java.util.Stack;
 import java.util.Enumeration;
+import java.util.ArrayList;
 
 /** This class is used for representing the inheritance tree during code
     generation. You will need to fill in some of its methods and
@@ -44,7 +46,8 @@ class CgenClassTable extends SymbolTable {
     private int intclasstag;
     private int boolclasstag;
     
-
+    public HashMap<AbstractSymbol, ArrayList<methodName>> dispTbls;
+    public AbstractSymbol currClass;
     // The following methods emit code for constants and global
     // declarations.
 
@@ -389,7 +392,7 @@ class CgenClassTable extends SymbolTable {
     /** Constructs a new class table and invokes the code generator */
     public CgenClassTable(Classes cls, PrintStream str) {
 	nds = new Vector();
-
+	dispTbls = new HashMap<AbstractSymbol, ArrayList<methodName>>();
 	this.str = str;
 
 	stringclasstag = 4 /* Change to your String class tag here */;
@@ -450,6 +453,7 @@ class CgenClassTable extends SymbolTable {
 	for(Enumeration e = nds.elements(); e.hasMoreElements();) {
 		CgenNode nd = (CgenNode) e.nextElement();
 		enterScope();
+		currClass = nd.name;
 		int loc = 0;
 		for(Enumeration f = nd.getFeatures().getElements(); f.hasMoreElements();) {
 			Feature feat = (Feature) f.nextElement();
@@ -463,7 +467,7 @@ class CgenClassTable extends SymbolTable {
 	    			loc += 1;
 	    			}		
 	    			else if (feat instanceof method) {	
-				str.println(nd.name + "." + ((method)feat).name());
+				str.print(nd.name + CgenSupport.METHOD_SEP + ((method)feat).name() + CgenSupport.LABEL);
     				CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -12, str);
     				CgenSupport.emitStore(CgenSupport.FP, 3, CgenSupport.SP, str);
     				CgenSupport.emitStore(CgenSupport.SELF, 2, CgenSupport.SP, str);
@@ -476,7 +480,7 @@ class CgenClassTable extends SymbolTable {
     				CgenSupport.emitLoad(CgenSupport.FP, 3, CgenSupport.SP, str);
     				CgenSupport.emitLoad(CgenSupport.SELF, 2, CgenSupport.SP, str);
     				CgenSupport.emitLoad(CgenSupport.RA, 1, CgenSupport.SP, str);
-    				CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 12, str);
+    				CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 12+((method)feat).formals.getLength()*4, str);
     				CgenSupport.emitReturn(str);
 	    			}	
 			}
@@ -511,7 +515,7 @@ class CgenClassTable extends SymbolTable {
     }
     private void emitClassProtObj(CgenNode nd) {
 		str.println(CgenSupport.WORD + "-1");
-	    str.println(nd.name+CgenSupport.PROTOBJ_SUFFIX);
+	    str.print(nd.name+CgenSupport.PROTOBJ_SUFFIX + CgenSupport.LABEL);
 		str.println(CgenSupport.WORD + tagDict.get(nd.name));
 		int size = 0;
 		for(Enumeration e = nd.getFeatures().getElements(); e.hasMoreElements();) {
@@ -592,21 +596,25 @@ class CgenClassTable extends SymbolTable {
     private void emitDispTbls() {
     	for (Enumeration e = nds.elements(); e.hasMoreElements(); ) {
     	    CgenNode nd = (CgenNode)e.nextElement();
+    	    dispTbls.put(nd.name, new ArrayList<methodName>());
     	    Stack<CgenNode> parents = parents(nd);
     	    str.print(nd.name+CgenSupport.DISPTAB_SUFFIX+CgenSupport.LABEL);
     	    while(!parents.empty()) {
     	    	CgenNode parent = parents.pop();
-    	    	emitMethods(parent);
+    	    	emitMethods(nd, parent);
     	    }
-    	    emitMethods(nd);	    
+    	    emitMethods(nd, nd);	    
     	}
     }
-    private void emitMethods(CgenNode nd) {
+    private void emitMethods(CgenNode currClass, CgenNode nd) {
+    	String methodName;
     	for(Enumeration e = nd.getFeatures().getElements(); e.hasMoreElements();) {
 	    	Feature feat = (Feature) e.nextElement();
 	    	if (feat instanceof method) {	
 	    		str.print(CgenSupport.WORD);
-	    		str.println(nd.name + CgenSupport.METHOD_SEP + ((method) feat).name);
+	    		methodName = nd.name + CgenSupport.METHOD_SEP + ((method) feat).name;
+	    		str.println(methodName);
+	    		dispTbls.get(currClass.name).add(new methodName(nd.name,((method) feat).name));
 	    	}
     	}
     }
@@ -656,6 +664,27 @@ class CgenClassTable extends SymbolTable {
     /** Gets the root of the inheritance tree */
     public CgenNode root() {
 	return (CgenNode)probe(TreeConstants.Object_);
+    }
+    
+    public int methodIndex(AbstractSymbol clsName, AbstractSymbol methName) {
+    	ArrayList<methodName> dispTbl = dispTbls.get(clsName);
+    	for(int i = 0; i < dispTbl.size(); i++) {
+    		if(methName.equals(dispTbl.get(i).methName)) {
+    			return i;
+    		}
+    	}
+    	return -1;
+    }
+    private class methodName {
+    	public AbstractSymbol clsName;
+    	public AbstractSymbol methName;
+    	public methodName(AbstractSymbol clsName, AbstractSymbol methName) {
+    		this.clsName = clsName;
+    		this.methName = methName;
+    	}
+    	public String toString() {    		
+    		return clsName.getString()+"."+methName.getString();
+    	}
     }
 }		
     
