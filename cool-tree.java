@@ -873,7 +873,7 @@ class dispatch extends Expression {
 		}
 		CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
 		CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
-		System.out.println("class name "+cls.currClass+"   expr type "+expr.get_type());
+		//System.out.println("class name "+cls.currClass+"   expr type "+expr.get_type());
 		if (expr.get_type().equals(TreeConstants.SELF_TYPE))
 			CgenSupport.emitLoad(CgenSupport.T1, cls.methodIndex(cls.currClass, name), CgenSupport.T1, s);
 		else
@@ -1033,14 +1033,13 @@ class loop extends Expression {
 		CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
 		int num2 = labelNum++;
 		CgenSupport.emitBeq(CgenSupport.T1, CgenSupport.ZERO, num2, s); //cond
+		//System.out.println("body");
 		body.code(cls, s); //cond true 
 		CgenSupport.emitBranch(num, s); //loop back
 		
 		CgenSupport.emitLabelDef(num2, s); //cond false
-		//CgenSupport.emitEpilogue(s);
-		
-		
-
+		CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.ZERO, s);
+		//CgenSupport.emitEpislogue(s);
 	}
 
 }
@@ -1355,6 +1354,7 @@ class plus extends Expression {
 		CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
 		CgenSupport.emitPush(CgenSupport.T1, s);
 		e2.code(cls, s);
+		CgenSupport.emitJal("Object.copy", s);
 		CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.ACC, s);
 		CgenSupport.emitTop(CgenSupport.T1, s);
 		CgenSupport.emitAdd(CgenSupport.T1, CgenSupport.T1, CgenSupport.T2, s);
@@ -1427,6 +1427,7 @@ class sub extends Expression {
 		CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
 		CgenSupport.emitPush(CgenSupport.T1, s);
 		e2.code(cls, s);
+		CgenSupport.emitJal("Object.copy", s);
 		CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.ACC, s);
 		CgenSupport.emitTop(CgenSupport.T1, s);
 		CgenSupport.emitSub(CgenSupport.T1, CgenSupport.T1, CgenSupport.T2, s);
@@ -1499,6 +1500,7 @@ class mul extends Expression {
 		CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
 		CgenSupport.emitPush(CgenSupport.T1, s);
 		e2.code(cls, s);
+		CgenSupport.emitJal("Object.copy", s);
 		CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.ACC, s);
 		CgenSupport.emitTop(CgenSupport.T1, s);
 		CgenSupport.emitMul(CgenSupport.T1, CgenSupport.T1, CgenSupport.T2, s);
@@ -1571,6 +1573,7 @@ class divide extends Expression {
 		CgenSupport.emitLoad(CgenSupport.T1, 3, CgenSupport.ACC, s);
 		CgenSupport.emitPush(CgenSupport.T1, s);
 		e2.code(cls, s);
+		CgenSupport.emitJal("Object.copy", s);
 		CgenSupport.emitLoad(CgenSupport.T2, 3, CgenSupport.ACC, s);
 		CgenSupport.emitTop(CgenSupport.T1, s);
 		CgenSupport.emitDiv(CgenSupport.T1, CgenSupport.T1, CgenSupport.T2, s);
