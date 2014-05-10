@@ -873,7 +873,11 @@ class dispatch extends Expression {
 		}
 		CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
 		CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
-		CgenSupport.emitLoad(CgenSupport.T1, cls.methodIndex(cls.currClass, name), CgenSupport.T1, s);
+		System.out.println("class name "+cls.currClass+"   expr type "+expr.get_type());
+		if (expr.get_type().equals(TreeConstants.SELF_TYPE))
+			CgenSupport.emitLoad(CgenSupport.T1, cls.methodIndex(cls.currClass, name), CgenSupport.T1, s);
+		else
+			CgenSupport.emitLoad(CgenSupport.T1, cls.methodIndex(expr.get_type(), name), CgenSupport.T1, s);
 		CgenSupport.emitJalr(CgenSupport.T1, s);
 		
 		//java.util.ArrayList x = cls.dispTbls.get(cls.currClass);

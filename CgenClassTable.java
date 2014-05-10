@@ -638,8 +638,9 @@ class CgenClassTable extends SymbolTable {
     }
     private void emitObjInit() {
     	for (Enumeration e = nds.elements(); e.hasMoreElements(); ) {
-		enterScope();
+    		enterScope();
     		CgenNode nd = (CgenNode)e.nextElement();
+    		currClass = nd.name;
     		str.print(nd.name + CgenSupport.CLASSINIT_SUFFIX + CgenSupport.LABEL);
     		CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -12, str);
     		CgenSupport.emitStore(CgenSupport.FP, 3, CgenSupport.SP, str);
