@@ -38,7 +38,7 @@ class CgenClassTable extends SymbolTable {
     /** All classes in the program, represented as CgenNode */
     private Vector nds;
 
-    Map tagDict = new HashMap();
+    public HashMap<AbstractSymbol, Integer>tagDict = new HashMap<AbstractSymbol, Integer>();
     /** This is the stream to which assembly instructions are output */
     private PrintStream str;
 
@@ -603,30 +603,6 @@ class CgenClassTable extends SymbolTable {
     	}
     }
     private void emitDispTbls() {
-    	/*for (Enumeration e = nds.elements(); e.hasMoreElements(); ) {
-    		String methodName;
-    	    CgenNode nd = (CgenNode)e.nextElement();
-    	    dispTbls.put(nd.name, new ArrayList<methodName>());
-    	    Stack<CgenNode> parents = parents(nd);
-    	    str.print(nd.name+CgenSupport.DISPTAB_SUFFIX+CgenSupport.LABEL);
-    	    /*for(Enumeration ee = nd.getFeatures().getElements(); ee.hasMoreElements();) { //add  nd methods to table
-    	    	Feature feat = (Feature) ee.nextElement();
-    	    	if (feat instanceof method) {	
-    	    		methodName = nd.name + CgenSupport.METHOD_SEP + ((method) feat).name;
-    	    		dispTbls.get(nd.name).add(new methodName(nd.name,((method) feat).name));
-    	    	}
-    	    }
-    	    while(!parents.empty()) {
-    	    	CgenNode parent = parents.pop();
-    	    	emitMethods(nd, parent);
-    	    }
-    	    emitMethods(nd, nd);
-        	//ArrayList<methodName> dispTbl = dispTbls.get(nd.name);
-        	//System.out.println(nd.name);
-        	/*for(int i = 0; i < dispTbl.size(); i++) {
-        		System.out.println(dispTbl.get(i).methName);
-        	}
-    	}*/
     	for (Enumeration e = nds.elements(); e.hasMoreElements(); ) {
     	    CgenNode nd = (CgenNode)e.nextElement();
     	    dispTbls.put(nd.name, new ArrayList<methodName>());
@@ -663,36 +639,6 @@ class CgenClassTable extends SymbolTable {
     	
     	}
     }
-  /*  private void emitMethods(CgenNode currClass, CgenNode nd) {
-
-
-    	boolean lowestChild = currClass.equals(nd);
-
-   
-    	for(Enumeration e = nd.getFeatures().getElements(); e.hasMoreElements();) {
-	    	Feature feat = (Feature) e.nextElement();
-	    	if (feat instanceof method) {	
-    			if(containsMethod(currClass, ((method) feat).name) && !lowestChild) { //override
-    				str.print(CgenSupport.WORD);
-    				methodName = currClass.name + CgenSupport.METHOD_SEP + ((method) feat).name;
-		    		str.println(methodName);
-		    		dispTbls.get(currClass.name).add(new methodName(currClass.name,((method) feat).name));
-    			}
-    			else if(!containsMethod(nd.getParentNd(), ((method) feat).name) && lowestChild) { //new method
-    				str.print(CgenSupport.WORD);
-    				methodName = nd.name + CgenSupport.METHOD_SEP + ((method) feat).name;
-		    		str.println(methodName);
-		    		dispTbls.get(currClass.name).add(new methodName(nd.name,((method) feat).name));
-    			}
-    			else if(!containsMethod(currClass, ((method) feat).name)) { //inherited method
-    				str.print(CgenSupport.WORD);
-    				methodName = nd.name + CgenSupport.METHOD_SEP + ((method) feat).name;
-		    		str.println(methodName);
-		    		dispTbls.get(currClass.name).add(new methodName(nd.name,((method) feat).name));
-    			}
-		    }
-    	}
-    }*/
     private boolean containsMethod(CgenNode nd, AbstractSymbol methodName) {
     	for(Enumeration e = nd.getFeatures().getElements(); e.hasMoreElements();) {
     		Feature feat = (Feature) e.nextElement();

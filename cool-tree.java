@@ -1116,13 +1116,13 @@ class typcase extends Expression {
 		expr.code(cls,s);
 		int epilogueLabel = labelNum++;
 		
-
+		int branchLabel= labelNum++;;
 		// start ???
-		int branchLabel = labelNum++;
+		/*int branchLabel = labelNum++;
 		CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, branchLabel, s);
 		CgenSupport.emitLoadAddress(CgenSupport.ACC, "str_const1", s);
-		CgenSupport.emitLoadImm(CgenSupport.T1, 13, s);
-		CgenSupport.emitJal("case_abort2", s);
+		CgenSupport.emitLoadImm(CgenSupport.T1, 13, s); //change
+		CgenSupport.emitJal("case_abort2", s);*/
 		// end ???
 		
 		for(int i = 0; i < cases.getLength(); i++) {
@@ -1133,21 +1133,36 @@ class typcase extends Expression {
 			}
 			branchLabel = labelNum++;
 			CgenNode branchNode = (CgenNode) cls.lookup(b.type_decl);
-			int tag = (int) cls.tagDict.get(branchNode);
-			CgenSupport.emitBlt(CgenSupport.T2, tag+"" , branchLabel, s);
-			CgenSupport.emitBlt(tag+"", CgenSupport.T2, branchLabel, s);
-			//?
+			cls.enterScope();
+			cls.addId(b.name, new Entry(b.name, true, 0));
+			int tag = cls.tagDict.get(branchNode.name);
+			CgenSupport.emitBlti(CgenSupport.T2, tag , branchLabel, s);
+			CgenSupport.emitBgti(CgenSupport.T2, tag , branchLabel, s);
+			CgenSupport.emitPush(CgenSupport.ACC, s);
+			
+			CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, -12, s);
+			CgenSupport.emitStore(CgenSupport.FP, 3, CgenSupport.SP, s);
+			CgenSupport.emitStore(CgenSupport.SELF, 2, CgenSupport.SP, s);
+			CgenSupport.emitStore(CgenSupport.RA, 1, CgenSupport.SP, s);
+			CgenSupport.emitAddiu(CgenSupport.FP, CgenSupport.SP, 16, s);
+			
 			b.expr.code(cls,s);
+			CgenSupport.emitPop(s);
+			
+	    	CgenSupport.emitLoad(CgenSupport.FP, 3, CgenSupport.SP, s);
+	    	CgenSupport.emitLoad(CgenSupport.SELF, 2, CgenSupport.SP, s);
+	    	CgenSupport.emitLoad(CgenSupport.RA, 1, CgenSupport.SP, s);
+	    	CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 12, s);
+	    	CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 0, s);
+	    	
 			CgenSupport.emitBranch(epilogueLabel, s);
 		}
-		
 		/*none of the types match */
 		CgenSupport.emitLabelDef(branchLabel, s);
 		CgenSupport.emitJal("_case_abort", s);
 		
 		/*label for end of case */
 		CgenSupport.emitLabelDef(epilogueLabel, s);
-		//CgenSupport.emitEpilogue(s);
 		
 	}
 
