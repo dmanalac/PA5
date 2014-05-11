@@ -165,6 +165,9 @@ class SymbolTable {
 	}
 }
 
+/*Container class. It contains a class's name, whether it is a local variable or not,
+ * and its offset in the stack
+ */
 class Entry {
 	public AbstractSymbol Name;
 	public boolean Local;

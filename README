@@ -167,23 +167,47 @@ Instructions
 Write-up for PA5
 ----------------
 
-In this project assignment, we stuck mostly to the basic structure laid out by
-the skeleton code and demonstrated by coolc.
+We implemented the header information by creating methods for each section of
+the header (i.e. a method for dispTbl, another method for constants, etc.). 
+Each of these methods emit the code to create the header and are called in the 
+code() method.
 
-Our CgenClassTable class initializes the code generation process, creating 
-prototype classes, constant values ect. Then, .code is called for every method, 
-to generate the actual code. This code method is defined in cool-tree, separately 
-for each expression.
+Tags are stored in a HashMap called tagDict.
+Methods for each class are stored in a HashMap called dispTbls.
+methodName is a container class used to help map methods to its class. It is used
+in dispTbls.
 
-We handle let statements and class variables by storing these in a Symbol Table
-(CgenClassTable itself). Variables are stored in the Symbol Table, with let variables
-marked as "local" and class variables marked as not "local". Let variables are found
-on the stack. Class variables are found through the self register and recorded offset
-in the table.
+Our header information is directly corresponds to coolc's version of the information.
+Since we copy the same information it does, our headers are correct.
 
-Our Bad.cl simply tests all of the errors that our program is supposed to be able 
-to catch. Our Good.cl aims to sufficiently test all of the different expressions
-in a methodical fashion.
+Code generation was done in the emitObjInit() (for _init) and emitClassMethods()
+(for methods). They loop through each class and emit the correct code. These 
+functions directly emit the function prologue and epilogue. The actual body of the
+generated code is created by calling code() on each feature of a class. This will in 
+turn call code() on that feature's expression.
+
+In cool-tree, emitted the code corresponding to each expression. Code() is recursively
+called on subexpressions. The instructions use a stack system, using a0, s0 and the
+temporary registers. Local variables are stored on the stack. They are kept track of by 
+using a container class called Entry in SymbolTable. It contains the class name, whether 
+it is a local variable or not, and its offset from the current stack pointer. Labels are 
+kept track of using a static variable labelNum, so labels do not overwrite each
+other. 
+
+Furthermore, the current class is passed around to each expression so each expression
+knows which class called it. This is useful for expressions such as dispatch, by allowing
+us to find the proper method to call.
+
+Several methods were added to CgenSupport for convenience such as emitPop.
+
+Test Cases:
+Our test cases use examples of every type of expression from plus to case. This gives us 
+a wide coverage of tests that thoroughly test the different aspects of our program. To make
+things clear, the test print out the numbers 1-50 and end in a dispatch_abort. These prints 
+clarify which tests are passing and which ones are not (misisng numbers mean a test is 
+failing). 
+
+
 
 
 
@@ -196,20 +220,34 @@ Coolaid Feedback (optional)
    helped nor hindered you, and 6 means that you can't imagine
    developing/debugging a code generator without it.
 
-Solid 5.5
+
 
 2. What aspects of Coolaid particularly helped you?
 
-The detailed error messages.
+
+
 
 
 3. What aspects of Coolaid would you like to see improved?
 
-UI! Certain things could be a bit clearer like they are in MARS.
+
+
+
+
 
 4. Describe bugs, if any, that Coolaid helped you find or fix?
 
-Many many faulty stack manipulation errors.
+
+
+
+
 
 5. Do you have any additional comments you would like to share
    with us?
+
+
+
+
+
+
+
