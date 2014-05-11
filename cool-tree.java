@@ -2325,6 +2325,7 @@ class object extends Expression {
 		if(name == TreeConstants.self) {
 			CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
 		}
+		else if (((Entry)cls.lookup(name)) == null) {}
 		else if (((Entry)cls.lookup(name)).Local == false) {
 			CgenSupport.emitLoad(CgenSupport.ACC, ((Entry)cls.lookup(name)).Offset, CgenSupport.SELF, s);
 		} else if (((Entry)cls.lookup(name)).Local == true){

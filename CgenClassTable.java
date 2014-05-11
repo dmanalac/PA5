@@ -39,6 +39,7 @@ class CgenClassTable extends SymbolTable {
     private Vector nds;
 
     public HashMap<AbstractSymbol, Integer>tagDict = new HashMap<AbstractSymbol, Integer>();
+    public HashMap<AbstractSymbol, CgenNode> classMap = new HashMap<AbstractSymbol, CgenNode>();
     /** This is the stream to which assembly instructions are output */
     private PrintStream str;
 
@@ -603,26 +604,44 @@ class CgenClassTable extends SymbolTable {
     	}
     }
     private void emitDispTbls() {
+    	//holds classes whose parents are later in the file
+    	ArrayList<CgenNode> oooClasses = new ArrayList<CgenNode>(); 
     	for (Enumeration e = nds.elements(); e.hasMoreElements(); ) {
     	    CgenNode nd = (CgenNode)e.nextElement();
+    		oooClasses.add(nd);
     	    dispTbls.put(nd.name, new ArrayList<methodName>());
+    	}
+    	//for (Enumeration e = nds.elements(); e.hasMoreElements(); ) {
+    	while(!oooClasses.isEmpty()) {
+    	   // CgenNode nd = (CgenNode)e.nextElement();
+    		CgenNode nd = oooClasses.remove(0);
+    		//System.out.println("asdasdasd");
+    	   // dispTbls.put(nd.name, new ArrayList<methodName>());
 	    	String methodName;
 	    	AbstractSymbol clsName, methName;
 	    	int size;
     	    str.print(nd.name+CgenSupport.DISPTAB_SUFFIX+CgenSupport.LABEL);
 	    	if(!(nd.getParentNd().name == TreeConstants.No_class)) {
-		    	ArrayList<methodName> dispTbl = dispTbls.get(nd.getParentNd().name);
-		    	for(int i = 0; i < dispTbl.size(); i++) {
-		    		clsName = dispTbl.get(i).clsName;
-		    		methName = dispTbl.get(i).methName;
-		    		if(containsMethod(nd, methName)) {
-		    			clsName = nd.name;
-		    		}
-					str.print(CgenSupport.WORD);
-					methodName = clsName + CgenSupport.METHOD_SEP + methName;
-		    		str.println(methodName);
-		    		dispTbls.get(nd.name).add(new methodName(clsName, methName));
-		    	}
+	    		if(dispTbls.get(nd.getParentNd().name) == null) {
+	    			oooClasses.add(nd);
+	    			System.out.println("NULL "+nd.name.toString());
+	    		} else {
+			    	ArrayList<methodName> dispTbl = dispTbls.get(nd.getParentNd().name);
+			    	for(int i = 0; i < dispTbl.size(); i++) {
+			    		clsName = dispTbl.get(i).clsName;
+			    		methName = dispTbl.get(i).methName;
+			    		if(clsName == null) System.out.println("dfadsfdasfsafadf"+nd.name);
+			    		if(methName == null) System.out.println("dfadsfdasfsafadf"+nd.name);
+			    		System.out.println("cls "+clsName+"  method "+methName);
+			    		if(containsMethod(nd, methName)) {
+			    			clsName = nd.name;
+			    		}
+						str.print(CgenSupport.WORD);
+						methodName = clsName + CgenSupport.METHOD_SEP + methName;
+			    		str.println(methodName);
+			    		dispTbls.get(nd.name).add(new methodName(clsName, methName));
+			    	}
+	    		}
 	    	}
 	    	for(Enumeration ee = nd.getFeatures().getElements(); ee.hasMoreElements();) {
 	    		Feature feat = (Feature) ee.nextElement();
@@ -636,8 +655,7 @@ class CgenClassTable extends SymbolTable {
 	    			}
 	    		}
 	    	}
-    	
-    	}
+    	}  	
     }
     private boolean containsMethod(CgenNode nd, AbstractSymbol methodName) {
     	for(Enumeration e = nd.getFeatures().getElements(); e.hasMoreElements();) {
