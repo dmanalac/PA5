@@ -554,7 +554,12 @@ class attr extends Feature {
 	public void code(CgenClassTable cls, PrintStream s) {
 		if (!(init instanceof no_expr)) {
 			init.code(cls, s);
-			CgenSupport.emitStore(CgenSupport.ACC , ((Entry)cls.lookup(name)).Offset, CgenSupport.SELF ,s);
+			int offset = ((Entry)cls.lookup(name)).Offset;
+			CgenSupport.emitStore(CgenSupport.ACC , offset, CgenSupport.SELF ,s);
+			if(Flags.cgen_Memmgr==Flags.GC_GENGC) {
+				CgenSupport.emitAddiu(CgenSupport.A1, CgenSupport.SELF, offset*4, s);
+				CgenSupport.emitGCAssign(s);
+			}
 		}
 	}
 
@@ -713,8 +718,10 @@ class assign extends Expression {
 		if (((Entry)cls.lookup(name)).Local == false) { //if not a local variable, look it up
 			int offset = ((Entry)cls.lookup(name)).Offset;
 			CgenSupport.emitStore(CgenSupport.ACC , offset, CgenSupport.SELF ,s);
-			CgenSupport.emitAddiu(CgenSupport.A1, CgenSupport.SELF, offset, s);
-			CgenSupport.emitGCAssign(s);
+			if(Flags.cgen_Memmgr==Flags.GC_GENGC) {
+				CgenSupport.emitAddiu(CgenSupport.A1, CgenSupport.SELF, offset*4, s);
+				CgenSupport.emitGCAssign(s);
+			}
 		} else { 
 			CgenSupport.emitStore(CgenSupport.ACC, cls.depth(name), CgenSupport.FP, s);
 		}
