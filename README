@@ -200,6 +200,11 @@ us to find the proper method to call.
 
 Several methods were added to CgenSupport for convenience such as emitPop.
 
+Garbage Collection was done by calling add a0 self offset and jal GenGC_Assign after any
+assignments to attributes. In our implementation, this was done in cool_tree.assign.code()
+and cool_tree.attr.code(). The instructions are correct because they are exactly what the
+runtime manual says they should be.
+
 Test Cases:
 Our test cases use examples of every type of expression from plus to case. This gives us 
 a wide coverage of tests that thoroughly test the different aspects of our program. To make
