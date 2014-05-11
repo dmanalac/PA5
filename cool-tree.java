@@ -788,23 +788,29 @@ class static_dispatch extends Expression {
 	 *            the output stream
 	 * */
 	public void code(CgenClassTable cls, PrintStream s) {
-		//CgenSupport.emitPush(CgenSupport.FP, s);
 		for(int i = 0; i < actual.getLength(); i++) {
 			Expression e = (Expression) actual.getNth(i);
 			e.code(cls, s);
 			CgenSupport.emitPush(CgenSupport.ACC,s);
 		}		
-		//CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
 		expr.code(cls,s);
-		CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
-		CgenSupport.emitLoad(CgenSupport.T1, cls.methodIndex(type_name, name), CgenSupport.T1, s);
-		CgenSupport.emitJalr(CgenSupport.T1, s);
+		int label = labelNum++;
+		CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, label, s);
+		CgenSupport.emitLoadAddress(CgenSupport.ACC, "str_const0", s);
+		CgenSupport.emitLoadImm(CgenSupport.T1, lineNumber, s); 
+		CgenSupport.emitJal("_dispatch_abort", s);
 		
+		CgenSupport.emitLabelDef(label,s);	
+		CgenSupport.emitLoadAddress(CgenSupport.T1, type_name.getString()+CgenSupport.DISPTAB_SUFFIX, s);
+		//CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
+		CgenSupport.emitLoad(CgenSupport.T1, cls.methodIndex(type_name, name), CgenSupport.T1, s);
 		/*if (expr.get_type().equals(TreeConstants.SELF_TYPE))
 			CgenSupport.emitLoad(CgenSupport.T1, cls.methodIndex(cls.currClass, name), CgenSupport.T1, s);
-		else
-			CgenSupport.emitLoad(CgenSupport.T1, cls.methodIndex(expr.get_type(), name), CgenSupport.T1, s);
-		CgenSupport.emitJalr(CgenSupport.T1, s);*/
+		else {
+			CgenSupport.emitLoad(CgenSupport.T1, cls.methodIndex(type_name, name), CgenSupport.T1, s);
+		}*/
+		CgenSupport.emitJalr(CgenSupport.T1, s);
+
 	}
 	
 	
@@ -874,13 +880,11 @@ class dispatch extends Expression {
 	 *            the output stream
 	 * */
 	public void code(CgenClassTable cls, PrintStream s) {
-		//CgenSupport.emitPush(CgenSupport.FP, s);
 		for(int i = 0; i < actual.getLength(); i++) {
 			Expression e = (Expression) actual.getNth(i);
 			e.code(cls, s);
 			CgenSupport.emitPush(CgenSupport.ACC,s);
 		}
-		//CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
 		expr.code(cls, s);
 		int label = labelNum++;
 		CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, label, s);
@@ -890,22 +894,13 @@ class dispatch extends Expression {
 		
 		CgenSupport.emitLabelDef(label,s);
 		CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
-		//System.out.println("class name "+cls.currClass+"   expr type "+expr.get_type());
 		if (expr.get_type().equals(TreeConstants.SELF_TYPE))
 			CgenSupport.emitLoad(CgenSupport.T1, cls.methodIndex(cls.currClass, name), CgenSupport.T1, s);
 		else {
-			//System.out.println("index "+cls.methodIndex(expr.get_type(), name));
 			CgenSupport.emitLoad(CgenSupport.T1, cls.methodIndex(expr.get_type(), name), CgenSupport.T1, s);
 		}
-
 		CgenSupport.emitJalr(CgenSupport.T1, s);
 		
-		//java.util.ArrayList x = cls.dispTbls.get(cls.currClass);
-		//System.out.println(cls.dispTbls.get(cls.currClass));
-		//System.out.println("class "+cls.currClass.toString());
-		//for(int i = 0; i < x.size(); i++) {
-		//	System.out.print(x.get(i).toString());
-		//}
 	}
 
 }
@@ -2223,7 +2218,7 @@ class isvoid extends Expression {
 		CgenSupport.emitMove(CgenSupport.T1, CgenSupport.ACC, s);
 		CgenSupport.emitLoadAddress(CgenSupport.ACC, CgenSupport.BOOLCONST_PREFIX+1, s); //true
 		int num = labelNum++;
-		CgenSupport.emitBeqz(CgenSupport.ACC, num, s);
+		CgenSupport.emitBeqz(CgenSupport.T1, num, s);
 		CgenSupport.emitLoadAddress(CgenSupport.ACC, CgenSupport.BOOLCONST_PREFIX+0, s); //false
 		
 		CgenSupport.emitLabelDef(num, s);

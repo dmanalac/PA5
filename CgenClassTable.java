@@ -469,7 +469,8 @@ class CgenClassTable extends SymbolTable {
 	    			}		
 	    			else if (feat instanceof method) {	
 	    				Formals fs = ((method) feat).formals;
-	    				for(int i = fs.getLength()-1; i>=0; i--) {
+	    				//for(int i = fs.getLength()-1; i>=0; i--) {
+	    				for(int i = 0; i<fs.getLength(); i++) {
 	    					enterScope();
 	    					AbstractSymbol n = ((formalc)fs.getNth(i)).name;
 	    					addId(n, new Entry(n, true, 0));
@@ -613,10 +614,7 @@ class CgenClassTable extends SymbolTable {
     	}
     	//for (Enumeration e = nds.elements(); e.hasMoreElements(); ) {
     	while(!oooClasses.isEmpty()) {
-    	   // CgenNode nd = (CgenNode)e.nextElement();
     		CgenNode nd = oooClasses.remove(0);
-    		//System.out.println("asdasdasd");
-    	   // dispTbls.put(nd.name, new ArrayList<methodName>());
 	    	String methodName;
 	    	AbstractSymbol clsName, methName;
 	    	int size;
@@ -624,15 +622,11 @@ class CgenClassTable extends SymbolTable {
 	    	if(!(nd.getParentNd().name == TreeConstants.No_class)) {
 	    		if(dispTbls.get(nd.getParentNd().name) == null) {
 	    			oooClasses.add(nd);
-	    			System.out.println("NULL "+nd.name.toString());
 	    		} else {
 			    	ArrayList<methodName> dispTbl = dispTbls.get(nd.getParentNd().name);
 			    	for(int i = 0; i < dispTbl.size(); i++) {
 			    		clsName = dispTbl.get(i).clsName;
 			    		methName = dispTbl.get(i).methName;
-			    		if(clsName == null) System.out.println("dfadsfdasfsafadf"+nd.name);
-			    		if(methName == null) System.out.println("dfadsfdasfsafadf"+nd.name);
-			    		System.out.println("cls "+clsName+"  method "+methName);
 			    		if(containsMethod(nd, methName)) {
 			    			clsName = nd.name;
 			    		}
