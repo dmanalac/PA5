@@ -610,19 +610,19 @@ class CgenClassTable extends SymbolTable {
     	for (Enumeration e = nds.elements(); e.hasMoreElements(); ) {
     	    CgenNode nd = (CgenNode)e.nextElement();
     		oooClasses.add(nd);
-    	    dispTbls.put(nd.name, new ArrayList<methodName>());
     	}
-    	//for (Enumeration e = nds.elements(); e.hasMoreElements(); ) {
+		dispTbls.put(TreeConstants.Object_, new ArrayList<methodName>());
     	while(!oooClasses.isEmpty()) {
     		CgenNode nd = oooClasses.remove(0);
 	    	String methodName;
 	    	AbstractSymbol clsName, methName;
 	    	int size;
-    	    str.print(nd.name+CgenSupport.DISPTAB_SUFFIX+CgenSupport.LABEL);
 	    	if(!(nd.getParentNd().name == TreeConstants.No_class)) {
 	    		if(dispTbls.get(nd.getParentNd().name) == null) {
 	    			oooClasses.add(nd);
 	    		} else {
+	    			str.print(nd.name+CgenSupport.DISPTAB_SUFFIX+CgenSupport.LABEL);
+	    			dispTbls.put(nd.name, new ArrayList<methodName>());
 			    	ArrayList<methodName> dispTbl = dispTbls.get(nd.getParentNd().name);
 			    	for(int i = 0; i < dispTbl.size(); i++) {
 			    		clsName = dispTbl.get(i).clsName;
@@ -635,21 +635,28 @@ class CgenClassTable extends SymbolTable {
 			    		str.println(methodName);
 			    		dispTbls.get(nd.name).add(new methodName(clsName, methName));
 			    	}
+			    	emitMethods(nd);
 	    		}
-	    	}
-	    	for(Enumeration ee = nd.getFeatures().getElements(); ee.hasMoreElements();) {
-	    		Feature feat = (Feature) ee.nextElement();
-	    		if (feat instanceof method) {
-	    			method m = (method) feat;
-	    			if(!inDispTbl(nd.getParentNd().name, m.name)) {
-						str.print(CgenSupport.WORD);
-						methodName = nd.name + CgenSupport.METHOD_SEP + m.name;
-			    		str.println(methodName);
-		        		dispTbls.get(nd.name).add(new methodName(nd.name, m.name));
-	    			}
-	    		}
+	    	} else {
+	    		str.print(nd.name+CgenSupport.DISPTAB_SUFFIX+CgenSupport.LABEL);
+	    		emitMethods(nd);
 	    	}
     	}  	
+    }
+    private void emitMethods(CgenNode nd) {
+    	String methodName;
+    	for(Enumeration ee = nd.getFeatures().getElements(); ee.hasMoreElements();) {
+    		Feature feat = (Feature) ee.nextElement();
+    		if (feat instanceof method) {
+    			method m = (method) feat;
+    			if(!inDispTbl(nd.getParentNd().name, m.name)) {
+					str.print(CgenSupport.WORD);
+					methodName = nd.name + CgenSupport.METHOD_SEP + m.name;
+		    		str.println(methodName);
+	        		dispTbls.get(nd.name).add(new methodName(nd.name, m.name));
+    			}
+    		}
+    	}
     }
     private boolean containsMethod(CgenNode nd, AbstractSymbol methodName) {
     	for(Enumeration e = nd.getFeatures().getElements(); e.hasMoreElements();) {
