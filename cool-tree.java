@@ -882,6 +882,13 @@ class dispatch extends Expression {
 		}
 		//CgenSupport.emitMove(CgenSupport.ACC, CgenSupport.SELF, s);
 		expr.code(cls, s);
+		int label = labelNum++;
+		CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, label, s);
+		CgenSupport.emitLoadAddress(CgenSupport.ACC, "str_const0", s);
+		CgenSupport.emitLoadImm(CgenSupport.T1, lineNumber, s); 
+		CgenSupport.emitJal("_dispatch_abort", s);
+		
+		CgenSupport.emitLabelDef(label,s);
 		CgenSupport.emitLoad(CgenSupport.T1, 2, CgenSupport.ACC, s);
 		//System.out.println("class name "+cls.currClass+"   expr type "+expr.get_type());
 		if (expr.get_type().equals(TreeConstants.SELF_TYPE))
@@ -1116,15 +1123,15 @@ class typcase extends Expression {
 		expr.code(cls,s);
 		int epilogueLabel = labelNum++;
 		
-		int branchLabel= labelNum++;;
+
 		// start ???
-		/*int branchLabel = labelNum++;
+		int branchLabel= labelNum++;
 		CgenSupport.emitBne(CgenSupport.ACC, CgenSupport.ZERO, branchLabel, s);
-		CgenSupport.emitLoadAddress(CgenSupport.ACC, "str_const1", s);
-		CgenSupport.emitLoadImm(CgenSupport.T1, 13, s); //change
-		CgenSupport.emitJal("case_abort2", s);*/
+		CgenSupport.emitLoadAddress(CgenSupport.ACC, "str_const0", s);
+		CgenSupport.emitLoadImm(CgenSupport.T1, lineNumber, s); 
+		CgenSupport.emitJal("_case_abort2", s);
 		// end ???
-		
+		//int branchLabel= labelNum++;;
 		for(int i = 0; i < cases.getLength(); i++) {
 			b = (branch) cases.getNth(i);
 			CgenSupport.emitLabelDef(branchLabel, s);
@@ -1147,14 +1154,14 @@ class typcase extends Expression {
 			CgenSupport.emitAddiu(CgenSupport.FP, CgenSupport.SP, 16, s);
 			
 			b.expr.code(cls,s);
-			CgenSupport.emitPop(s);
+			
 			
 	    	CgenSupport.emitLoad(CgenSupport.FP, 3, CgenSupport.SP, s);
 	    	CgenSupport.emitLoad(CgenSupport.SELF, 2, CgenSupport.SP, s);
 	    	CgenSupport.emitLoad(CgenSupport.RA, 1, CgenSupport.SP, s);
 	    	CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 12, s);
 	    	CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 0, s);
-	    	
+	    	CgenSupport.emitPop(s);
 			CgenSupport.emitBranch(epilogueLabel, s);
 		}
 		/*none of the types match */
@@ -1315,13 +1322,14 @@ class let extends Expression {
 		//CgenSupport.emitMove(CgenSupport.SELF, CgenSupport.ACC, s);
 		
 		body.code(cls,s);
-		CgenSupport.emitPop(s);
+	
     	CgenSupport.emitLoad(CgenSupport.FP, 3, CgenSupport.SP, s);
     	CgenSupport.emitLoad(CgenSupport.SELF, 2, CgenSupport.SP, s);
     	CgenSupport.emitLoad(CgenSupport.RA, 1, CgenSupport.SP, s);
     	CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 12, s);
     	CgenSupport.emitAddiu(CgenSupport.SP, CgenSupport.SP, 0, s);
     	//CgenSupport.emitReturn(s);
+    	CgenSupport.emitPop(s);
 		cls.exitScope();
 	}
 }
